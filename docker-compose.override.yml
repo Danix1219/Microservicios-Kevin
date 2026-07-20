@@ -51,6 +51,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Database: "Host=basketdb;Port=5432;Database=BasketDb;Username=postgres;Password=postgres"
+      ConnectionStrings__Redis: "distributedcache:6379" #Redis
     ports:
       - "8081:8080"
     depends_on:
