@@ -1,20 +1,21 @@
 using Basket.API.Data;
 using Basket.API.Models;
 using BuildingBlocks.Behaviors;
+using BuildingBlocks.Configuration;
 using BuildingBlocks.Exceptions.Handler;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var databaseConnection = PostgresConnectionString.Normalize(
+    builder.Configuration.GetConnectionString("Database")!);
+
 // Application services
 builder.Services.AddCarter();
 
-
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? ["http://localhost:5173"];
     ?? ["http://localhost:5173", "https://*.onrender.com"];
-
 
 builder.Services.AddCors(options =>
 {
@@ -35,7 +36,7 @@ builder.Services.AddMediatR(config =>
 // Data services
 builder.Services.AddMarten(opts =>
 {
-    opts.Connection(builder.Configuration.GetConnectionString("Database")!);
+    opts.Connection(databaseConnection);
     opts.Schema.For<ShoppingCart>().Identity(x => x.UserName);
 }).UseLightweightSessions();
 
@@ -52,12 +53,13 @@ builder.Services.AddStackExchangeRedisCache(options =>
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
 builder.Services.AddHealthChecks()
-    .AddNpgSql(builder.Configuration.GetConnectionString("Database")!)
+    .AddNpgSql(databaseConnection)
     .AddRedis(builder.Configuration.GetConnectionString("Redis")!);
 
 var app = builder.Build();
 
 // Pipeline
+app.UseCors("Frontend");
 app.MapCarter();
 app.UseExceptionHandler(options => { });
 

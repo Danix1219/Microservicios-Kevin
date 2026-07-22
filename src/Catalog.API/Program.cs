@@ -1,11 +1,14 @@
+using BuildingBlocks.Configuration;
+
 var builder = WebApplication.CreateBuilder(args);
+
+var databaseConnection = PostgresConnectionString.Normalize(
+    builder.Configuration.GetConnectionString("Database")!);
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 builder.Services.AddCarter();
 
-
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? ["http://localhost:5173"];
     ?? ["http://localhost:5173", "https://*.onrender.com"];
 
 builder.Services.AddCors(options =>
@@ -19,11 +22,12 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddMarten(opts =>
 {
-    opts.Connection(builder.Configuration.GetConnectionString("Database")!);
+    opts.Connection(databaseConnection);
 }).UseLightweightSessions();
 
 var app = builder.Build();
 
+app.UseCors("Frontend");
 app.MapCarter();
 
 app.Run();
