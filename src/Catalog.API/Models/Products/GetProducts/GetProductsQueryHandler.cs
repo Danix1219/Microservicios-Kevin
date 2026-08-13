@@ -6,7 +6,7 @@
     {
         public async Task<GetProductsResult>Handle(GetProductsQuery query, CancellationToken cancellationToken)
         { 
-            logger.LogInformation("GetProductsQueryHandler.Handle llamado con (@Query)", query);
+            logger.LogInformation("GetProductsQueryHandler.Handle llamado con {@Query}", query);
             var products = await session.Query<Product>().ToListAsync(cancellationToken);
             return new GetProductsResult(products);
         }

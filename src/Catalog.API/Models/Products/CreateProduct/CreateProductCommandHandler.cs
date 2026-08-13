@@ -27,7 +27,7 @@ namespace Catalog.API.Models.Products.CreateProduct
             // Salvar a base de datos
             documenentSession.Store(product);
             await documenentSession.SaveChangesAsync(cancellationToken);
-            return new CreateProductResult(Guid.NewGuid());
+            return new CreateProductResult(product.Id);
 
         }
     }
