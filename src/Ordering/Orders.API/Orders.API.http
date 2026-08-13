@@ -1,0 +1,46 @@
+@OrdersApi = http://localhost:6002
+@CustomerId = invitado
+@OrderId = REEMPLAZAR_CON_ID
+@IdempotencyKey = demo-order-001
+
+### Crear una orden válida (P1)
+POST {{OrdersApi}}/api/orders
+Content-Type: application/json
+Idempotency-Key: {{IdempotencyKey}}
+
+{
+  "customerId": "{{CustomerId}}",
+  "basketId": "{{CustomerId}}"
+}
+
+### Repetir la misma clave: devuelve la orden existente (P4)
+POST {{OrdersApi}}/api/orders
+Content-Type: application/json
+Idempotency-Key: {{IdempotencyKey}}
+
+{
+  "customerId": "{{CustomerId}}",
+  "basketId": "{{CustomerId}}"
+}
+
+### Consultar una orden (P2)
+GET {{OrdersApi}}/api/orders/{{OrderId}}
+
+### Consultar órdenes por cliente
+GET {{OrdersApi}}/api/orders/customer/{{CustomerId}}
+
+### Confirmar una orden (P5)
+PATCH {{OrdersApi}}/api/orders/{{OrderId}}/status
+Content-Type: application/json
+
+{
+  "status": "Confirmed"
+}
+
+### Cancelar una orden Pending
+PATCH {{OrdersApi}}/api/orders/{{OrderId}}/status
+Content-Type: application/json
+
+{
+  "status": "Cancelled"
+}

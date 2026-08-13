@@ -1,0 +1,54 @@
+{
+  "info": {
+    "name": "Orders.API - Pruebas obligatorias",
+    "description": "P1-P7 del microservicio de órdenes. Antes de P1 agrega productos al Basket del customerId configurado.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "ordersUrl", "value": "http://localhost:6002" },
+    { "key": "customerId", "value": "invitado" },
+    { "key": "idempotencyKey", "value": "demo-order-001" },
+    { "key": "orderId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "P1 - Crear orden válida",
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));", "const body = pm.response.json();", "pm.collectionVariables.set('orderId', body.id);"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Idempotency-Key", "value": "{{idempotencyKey}}" }],
+        "body": { "mode": "raw", "raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"basketId\": \"{{customerId}}\"\n}" },
+        "url": "{{ordersUrl}}/api/orders"
+      }
+    },
+    {
+      "name": "P2 - Consultar orden",
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('Contiene partidas', () => pm.expect(pm.response.json().items.length).to.be.above(0));"] } }],
+      "request": { "method": "GET", "url": "{{ordersUrl}}/api/orders/{{orderId}}" }
+    },
+    {
+      "name": "P4 - Repetir Idempotency-Key",
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Reintento devuelve 200', () => pm.response.to.have.status(200));", "pm.test('Misma orden', () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('orderId')));"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Idempotency-Key", "value": "{{idempotencyKey}}" }],
+        "body": { "mode": "raw", "raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"basketId\": \"{{customerId}}\"\n}" },
+        "url": "{{ordersUrl}}/api/orders"
+      }
+    },
+    {
+      "name": "P5 - Pending a Confirmed",
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('Confirmada', () => pm.expect(pm.response.json().status).to.eql('Confirmed'));"] } }],
+      "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"status\": \"Confirmed\" }" }, "url": "{{ordersUrl}}/api/orders/{{orderId}}/status" }
+    },
+    {
+      "name": "P6 - Transición inválida",
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('409 Conflict', () => pm.response.to.have.status(409));"] } }],
+      "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"status\": \"Cancelled\" }" }, "url": "{{ordersUrl}}/api/orders/{{orderId}}/status" }
+    },
+    {
+      "name": "Órdenes por cliente",
+      "request": { "method": "GET", "url": "{{ordersUrl}}/api/orders/customer/{{customerId}}" }
+    }
+  ]
+}

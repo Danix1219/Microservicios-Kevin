@@ -37,7 +37,7 @@ services:
       dockerfile: src/Catalog.API/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Database: "Host=ep-small-block-auhpzmpz-pooler.c-10.us-east-1.aws.neon.tech;Port=5432;Database=neondb;Username=neondb_owner;Password=npg_LbAoVEzIiW04;SSL Mode=Require;Channel Binding=Require"
+      ConnectionStrings__Database: "${CATALOG_DATABASE_CONNECTION}"
     ports:
       - "8080:8080"
     depends_on:
@@ -47,13 +47,30 @@ services:
     container_name: basket.api
     build:
       context: .
-      dockerfile: src/Basket/Basket.Api/Dockerfile
+      dockerfile: src/Basket/Basket.API/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Database: "Host=ep-autumn-frost-au29zthu-pooler.c-10.us-east-1.aws.neon.tech;Port=5432;Database=neondb;Username=neondb_owner;Password=npg_3pdRcNqa5ekJ;SSL Mode=Require;Channel Binding=Require"
-      ConnectionStrings__Redis: "thriving-bit-frisky-21872.db.redis.io:15292,user=default,password=hlhklhbckFI0iuPuWRmCEwx4vINasuGG,abortConnect=false" #Redis
+      ConnectionStrings__Database: "${BASKET_DATABASE_CONNECTION}"
+      ConnectionStrings__Redis: "${BASKET_REDIS_CONNECTION}"
     ports:
       - "8081:8080"
     depends_on:
       - basketdb
       - distributedcache
+
+  orders.api:
+    container_name: orders.api
+    build:
+      context: .
+      dockerfile: src/Ordering/Orders.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      MongoDb__ConnectionString: "${MONGODB_CONNECTION_STRING}"
+      MongoDb__DatabaseName: "${MONGODB_DATABASE_NAME:-OrdersDb}"
+      MongoDb__CollectionName: "${MONGODB_COLLECTION_NAME:-orders}"
+      Services__CatalogUrl: "https://catalogapi-gchz.onrender.com"
+      Services__BasketUrl: "https://basketapi.onrender.com"
+      Order__TaxRate: "0.16"
+      Cors__AllowedOrigins__0: "${FRONTEND_URL:-http://localhost:5173}"
+    ports:
+      - "8082:8080"
