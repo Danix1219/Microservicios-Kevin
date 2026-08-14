@@ -9,7 +9,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Progr
 builder.Services.AddCarter();
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? ["http://localhost:5173", "https://*.onrender.com"];
+    ?? ["http://localhost:5173", "https://*.onrender.com", "https://*.netlify.app"];
 
 builder.Services.AddCors(options =>
 {

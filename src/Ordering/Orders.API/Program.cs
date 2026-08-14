@@ -48,7 +48,7 @@ builder.Services.AddHttpClient<ICatalogClient, CatalogClient>(client =>
 });
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? ["http://localhost:5173", "https://*.onrender.com"];
+    ?? ["http://localhost:5173", "https://*.onrender.com", "https://*.netlify.app"];
 builder.Services.AddCors(options => options.AddPolicy("Frontend", policy => policy
     .WithOrigins(allowedOrigins)
     .SetIsOriginAllowedToAllowWildcardSubdomains()
