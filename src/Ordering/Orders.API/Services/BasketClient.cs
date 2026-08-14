@@ -1,10 +1,10 @@
 using System.Net;
 
-namespace Orders.API.Infrastructure.Clients;
+namespace Orders.API.Services;
 
-public sealed record BasketItemDto(int Quantity, string Color, decimal Price, Guid ProductId, string ProductName);
-public sealed record BasketDto(string UserName, IReadOnlyCollection<BasketItemDto> Items, decimal TotalPrice);
-internal sealed record BasketEnvelope(BasketDto Cart);
+public record BasketItemDto(int Quantity, string Color, decimal Price, Guid ProductId, string ProductName);
+public record BasketDto(string UserName, IReadOnlyCollection<BasketItemDto> Items, decimal TotalPrice);
+internal record BasketEnvelope(BasketDto Cart);
 
 public interface IBasketClient
 {

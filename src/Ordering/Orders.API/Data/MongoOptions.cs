@@ -1,4 +1,4 @@
-namespace Orders.API.Infrastructure;
+namespace Orders.API.Data;
 
 public sealed class MongoOptions
 {

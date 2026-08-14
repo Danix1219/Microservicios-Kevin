@@ -1,16 +1,23 @@
+using FluentValidation;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Orders.API.Application;
-using Orders.API.Endpoints;
-using Orders.API.Infrastructure;
-using Orders.API.Infrastructure.Clients;
-using Orders.API.Infrastructure.Persistence;
-using Orders.API.Middleware;
+using Orders.API.Data;
+using BuildingBlocks.Behaviors;
+using Orders.API.Exceptions;
+using Orders.API.Services;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddCarter();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddMediatR(config =>
+{
+    config.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    config.AddOpenBehavior(typeof(ValidationBehavior<,>));
+    config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+});
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new() { Title = "Orders API", Version = "v1", Description = "Microservicio de órdenes de compra con MongoDB e idempotencia." });
@@ -33,7 +40,6 @@ builder.Services.AddSingleton<IMongoClient>(provider =>
     new MongoClient(provider.GetRequiredService<IOptions<MongoOptions>>().Value.ConnectionString));
 builder.Services.AddScoped<MongoOrderRepository>();
 builder.Services.AddScoped<IOrderRepository>(provider => provider.GetRequiredService<MongoOrderRepository>());
-builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddHostedService<MongoIndexInitializer>();
 
 builder.Services.AddHttpClient<IBasketClient, BasketClient>(client =>
@@ -65,7 +71,7 @@ app.UseExceptionHandler();
 app.UseCors("Frontend");
 app.UseSwagger();
 app.UseSwaggerUI();
-app.MapOrderEndpoints();
+app.MapCarter();
 app.MapHealthChecks("/health");
 
 app.Run();

@@ -1,4 +1,4 @@
-namespace Orders.API.Domain;
+namespace Orders.API.Models;
 
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;

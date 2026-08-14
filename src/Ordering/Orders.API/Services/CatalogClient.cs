@@ -1,7 +1,7 @@
-namespace Orders.API.Infrastructure.Clients;
+namespace Orders.API.Services;
 
-public sealed record CatalogProductDto(Guid Id, string Name, decimal Price);
-internal sealed record CatalogProductsEnvelope(IReadOnlyCollection<CatalogProductDto> Products);
+public record CatalogProductDto(Guid Id, string Name, decimal Price);
+internal record CatalogProductsEnvelope(IReadOnlyCollection<CatalogProductDto> Products);
 
 public interface ICatalogClient
 {

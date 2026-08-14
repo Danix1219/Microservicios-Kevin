@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Diagnostics;
+using FluentValidation;
 using MongoDB.Driver;
-using Orders.API.Application;
-using Orders.API.Domain;
-using Orders.API.Infrastructure.Clients;
+using Orders.API.Models;
+using Orders.API.Services;
+using Orders.API.Orders.Shared;
 
-namespace Orders.API.Middleware;
+namespace Orders.API.Exceptions;
 
 public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : IExceptionHandler
 {
@@ -13,6 +14,7 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : I
         var (status, title, detail) = exception switch
         {
             OrderValidationException => (StatusCodes.Status400BadRequest, "Solicitud inválida", exception.Message),
+            ValidationException => (StatusCodes.Status400BadRequest, "Solicitud inválida", exception.Message),
             BadHttpRequestException => (StatusCodes.Status400BadRequest, "Solicitud inválida", "El cuerpo de la solicitud no tiene el formato esperado."),
             OrderNotFoundException => (StatusCodes.Status404NotFound, "Orden no encontrada", exception.Message),
             InvalidOrderStatusTransitionException => (StatusCodes.Status409Conflict, "Transición de estado inválida", exception.Message),

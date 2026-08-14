@@ -5,12 +5,27 @@ Microservicio ASP.NET Core Minimal API para crear y administrar órdenes de comp
 ## Arquitectura
 
 ```text
-Endpoints/       Contratos HTTP Minimal API
-Application/     Caso de uso, validaciones y cálculos
-Domain/          Order, OrderItem, estados y transiciones
-Infrastructure/  MongoDB, repositorio y clientes HTTP
-Middleware/      Respuestas de error controladas
+Orders/
+  CreateOrder/           Command + Validator + Handler + Carter Endpoint
+  UpdateOrderStatus/     Command + Validator + Handler + Carter Endpoint
+  GetOrderById/          Query + Handler + Carter Endpoint
+  GetOrdersByCustomer/   Query + Handler + Carter Endpoint
+  Shared/                Responses, mappings y excepciones compartidas
+Models/                  Order, OrderItem, estados y transiciones
+Data/                    MongoDB, repositorio, índices y opciones
+Services/                Clientes HTTP para Basket y Catalog
+Exceptions/              Respuestas de error controladas
 ```
+
+El servicio aplica CQRS con los mismos BuildingBlocks del resto de la solución:
+
+```text
+HTTP → Carter Endpoint → MediatR/ISender → Command o Query → Handler → Repository
+                                ↓
+                   ValidationBehavior + LoggingBehavior
+```
+
+Los endpoints solo traducen HTTP a mensajes CQRS. Los comandos modifican estado y las consultas únicamente leen; la infraestructura de MongoDB permanece detrás de `IOrderRepository`.
 
 ## Configuración local
 
@@ -107,6 +122,9 @@ Usa [Orders.API.http](Orders.API.http) o importa las solicitudes manualmente en 
 
 ## Decisiones técnicas
 
+- Carter descubre los módulos HTTP y MediatR resuelve cada handler por caso de uso.
+- `CreateOrder` y `UpdateOrderStatus` son comandos; `GetOrderById` y `GetOrdersByCustomer` son consultas.
+- FluentValidation se ejecuta en el pipeline antes de los handlers de comandos.
 - El precio del Basket debe coincidir con Catalog al comprar; Orders consulta `GET /products`, que ya existe en el Catalog publicado, por lo que no requiere volver a desplegar Catalog. La orden guarda ese valor y no lo recalcula posteriormente.
 - Un índice único en `IdempotencyKey` protege contra concurrencia y reintentos.
 - El cambio de estado usa un filtro atómico que exige el estado `Pending`.
