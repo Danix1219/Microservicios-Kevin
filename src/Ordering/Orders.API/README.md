@@ -11,6 +11,7 @@ Orders/
   GetOrderById/          Query + Handler + Carter Endpoint
   GetOrdersByCustomer/   Query + Handler + Carter Endpoint
   Shared/                Responses, mappings y excepciones compartidas
+Behaviors/               Validación y logging del pipeline MediatR
 Models/                  Order, OrderItem, estados y transiciones
 Data/                    MongoDB, repositorio, índices y opciones
 Services/                Clientes HTTP para Basket y Catalog

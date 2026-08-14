@@ -2,7 +2,7 @@ using FluentValidation;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Orders.API.Data;
-using BuildingBlocks.Behaviors;
+using Orders.API.Behaviors;
 using Orders.API.Exceptions;
 using Orders.API.Services;
 using System.Text.Json.Serialization;
